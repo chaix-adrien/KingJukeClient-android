@@ -33,7 +33,7 @@ export default class Dashboard extends Component {
 
   addThisSong = (url) => {
     if (url.split("https://m.youtube.com/watch?")[1])
-      console.log("add", this.currentURL)
+      console.log("add", url)
   }
 
   webViewChange = (url) => {
@@ -63,13 +63,13 @@ export default class Dashboard extends Component {
           automaticallyAdjustContentInsets={false}
           />
           {this.state.currentURL.split("https://m.youtube.com/watch?")[1] ?
-            <Button style={{margin: 10}} text="Add this song" onPress={() => this.addThisSong()} />
+            <Button style={{margin: 10}} text="Add this song" onPress={() => this.addThisSong(this.state.currentURL)} />
             : null
           }
         </Animatable.View>
         <Animatable.View  ref={e => (this.playlistView = e)} style={{flex: 1, width: width}}>
-          <TouchableOpacity onPress={() => this.swapToPlaylist()} style={{flex: 1, margin: 5, backgroundColor: colors.backgroundColor, elevation: 5}}>
-            <Text style={{flex: 1}}>Ode To the bong Lord</Text>
+          <TouchableOpacity onPress={() => this.swapToPlaylist()} style={{flex: 1, margin: 5, backgroundColor: "#EEEEEE", elevation: 5}}>
+            <Text style={{flex: 1, fontSize: 20, fontWeight: "bold", textAlign: 'center', textAlignVertical: "center"}}>PLAYLIST & SON EN COURS</Text>
 
           </TouchableOpacity>
         </Animatable.View>
