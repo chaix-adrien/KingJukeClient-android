@@ -29,6 +29,7 @@ export default class ytJukebox extends Component {
     super(props)
     this.state = {
       serverURL: "",
+      loaded: false,
     }
   }
 
@@ -37,7 +38,8 @@ export default class ytJukebox extends Component {
       if (rep) {
         this.setState({serverURL: rep})
       }
-      this.loader.transitionTo({opacity: 0})
+      this.loader.transitionTo({opacity: 0}, 500, 500)
+      setTimeout(() => this.setState({loaded: true}), 500)
     })
   }
 
@@ -50,6 +52,7 @@ export default class ytJukebox extends Component {
   }
 
   displayLoading = () => {
+    if (this.state.loaded) return null
     return (
       <Animatable.View ref={e => (this.loader = e)} style={styles.loadingContainer}>
         <Pulse size={width / 3} color={colors.main} />
