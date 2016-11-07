@@ -1,0 +1,7 @@
+{
+  "main": "black",
+  "background": "white",
+  "textMain": "black",
+  "border": "black",
+  "pressed": "grey",
+}

@@ -1,0 +1,5 @@
+rootProject.name = 'ytJukebox'
+
+include ':app'
+include ':react-native-network-info'
+project(':react-native-network-info').projectDir = new File(settingsDir, '../node_modules/react-native-network-info/android')
