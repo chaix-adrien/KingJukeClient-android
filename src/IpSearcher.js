@@ -13,6 +13,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  AsyncStorage,
 } from 'react-native';
 import {Pulse} from 'react-native-loader';
 import NetworkInfo from 'react-native-network-info';
@@ -31,14 +32,27 @@ export default class IpSearcher extends Component {
     }
   }
 
+  componentWillMount() {
+    AsyncStorage.getItem('@ytjukebox:lastServerUrl', (err, rep) => {
+      if (rep) {
+        this.checkThisIp(rep)
+      } else {
+        this.props.stopLoading()
+      }
+    })
+  }
+
   useThisServer = (url) => {
     this.setState({serverIP: url, scanning: false})
-    console.log("GET SERVER AT IP", url)
   }
 
   checkThisIp = (ip) => {
     if (!ip) ip = 0
-    const url = "http://" + ip + ':' + PORT
+    let url = ""
+    if (!ip.split("http://")[1])
+      url = "http://" + ip + ':' + PORT
+    else
+      url = ip
     return fetch(url).then(r => {
       if (r.status === 200) {
         this.props.setServerURL(url)
@@ -53,7 +67,6 @@ export default class IpSearcher extends Component {
     this.setState({scanning: true}, () => {
       NetworkInfo.getIPAddress(ip => {
         const domaine = ip.split('.').slice(0, -1).join('.')
-        console.log(domaine)
         for (let i = 0; i < 256; i++) {
           const ip = domaine + '.' + i
           this.checkThisIp(ip)
