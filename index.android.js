@@ -17,6 +17,7 @@ import {
   Dimensions,
 } from 'react-native';
 import {Pulse} from 'react-native-loader';
+import * as Animatable from 'react-native-animatable';
 
 import IpSearcher from './src/IpSearcher';
 import Dashboard from './src/Dashboard';
@@ -28,17 +29,15 @@ export default class ytJukebox extends Component {
     super(props)
     this.state = {
       serverURL: "",
-      loaded: false,
     }
   }
 
   componentWillMount() {
     AsyncStorage.getItem('@ytjukebox:lastServerUrl', (err, rep) => {
       if (rep) {
-        this.setState({serverURL: rep, loaded: true})
-      } else {
-        this.setState({loaded: true})
+        this.setState({serverURL: rep})
       }
+      this.loader.transitionTo({opacity: 0})
     })
   }
 
@@ -51,12 +50,11 @@ export default class ytJukebox extends Component {
   }
 
   displayLoading = () => {
-    if (this.state.loaded) return null
-          //<Pulse size={width / 3} color={colors.background} />
-          //<Text style={styles.loadingText}>OPENING{"\n"}YOUR{"\n"}JUKEBOX</Text>
     return (
-      <View style={styles.loadingContainer}>
-      </View>
+      <Animatable.View ref={e => (this.loader = e)} style={styles.loadingContainer}>
+        <Pulse size={width / 3} color={colors.main} />
+        <Text style={styles.loadingText}>OPENING{"\n"}YOUR{"\n"}JUKEBOX</Text>
+      </Animatable.View>
     )
   }
 
@@ -97,7 +95,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontStyle: 'italic',
     fontWeight: 'bold',
-    color: colors.main,
+    color: colors.background,
     textAlign: 'center'}
 });
 
