@@ -34,17 +34,24 @@ export default class ytJukebox extends Component {
   }
 
   stopLoading = () => {
-    this.loader.transitionTo({opacity: 0}, 500, 500)
+    if (this.loader)
+      this.loader.transitionTo({opacity: 0}, 500, 500)
     setTimeout(() => this.setState({loaded: true}), 500)
   }
 
   setServerURL = (url, callback) => {
+    console.log("CONNECT TO:", url)
     if (callback)
       this.setState({serverURL: url}, () => callback())
     else
       this.setState({serverURL: url})
     AsyncStorage.setItem('@ytjukebox:lastServerUrl', url)
     this.stopLoading()
+  }
+
+  quitServer = () => {
+    AsyncStorage.removeItem('@ytjukebox:lastServerUrl')
+    this.setState({serverURL: "", loaded: true})
   }
 
   displayLoading = () => {
@@ -61,7 +68,7 @@ export default class ytJukebox extends Component {
     return (
       <View style={styles.container}>
         {this.state.serverURL ?
-          <Dashboard serverURL={this.state.serverURL} />
+          <Dashboard serverURL={this.state.serverURL} quitServer={this.quitServer}/>
         : <IpSearcher setServerURL={this.setServerURL} stopLoading={this.stopLoading}/>
         }
         {this.displayLoading()}

@@ -70,7 +70,7 @@ export default class Dashboard extends Component {
         <Animatable.View  ref={e => (this.playlistView = e)} style={{flex: 1, width: width}}>
           <TouchableOpacity onPress={() => this.swapToPlaylist()} style={{flex: 1, margin: 5, backgroundColor: "#EEEEEE", elevation: 5}}>
             <Text style={{flex: 1, fontSize: 20, fontWeight: "bold", textAlign: 'center', textAlignVertical: "center"}}>PLAYLIST & SON EN COURS</Text>
-
+            <Button text="Close this JukeBox" onPress={this.props.quitServer} />
           </TouchableOpacity>
         </Animatable.View>
       </View>

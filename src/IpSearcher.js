@@ -27,27 +27,28 @@ export default class IpSearcher extends Component {
     super(props)
     this.state = {
       serverIP: "",
-      scanning: false,
+      scanning: 0,
       inputIp: "",
     }
   }
 
+
   componentWillMount() {
     AsyncStorage.getItem('@ytjukebox:lastServerUrl', (err, rep) => {
       if (rep) {
-        this.checkThisIp(rep)
+        this.checkThisIp(rep).then(res => {
+          if (!res)
+            this.props.stopLoading()
+        })
+        .catch(e => this.props.stopLoading())
       } else {
         this.props.stopLoading()
       }
     })
   }
 
-  useThisServer = (url) => {
-    this.setState({serverIP: url, scanning: false})
-  }
-
   checkThisIp = (ip) => {
-    if (!ip) ip = 0
+    if (!ip) ip = "0"
     let url = ""
     if (!ip.split("http://")[1])
       url = "http://" + ip + ':' + PORT
@@ -60,23 +61,36 @@ export default class IpSearcher extends Component {
       }
       return false
     })
-    .catch(e => null)
+    .catch(e => {
+      return false
+    })
   }
 
   getServerIp = () => {
-    this.setState({scanning: true}, () => {
+    this.setState({scanning: 1}, () => {
       NetworkInfo.getIPAddress(ip => {
+        if (!ip) {
+          this.setState({scanning: 0})
+          Alert.alert("Wait", "Where is your internet conexion ?")
+          return
+        }
         const domaine = ip.split('.').slice(0, -1).join('.')
+        const allChecks = []
         for (let i = 0; i < 256; i++) {
           const ip = domaine + '.' + i
-          this.checkThisIp(ip)
+          allChecks.push(this.checkThisIp(ip))
         }
+        Promise.all(allChecks).then(values => {
+          if (!values.some(value => value)) {
+            this.setState({scanning: 0})
+          }
+        })
       });
     })
   }
 
   displayScanNetwork = () => {
-    if (this.state.scanning)
+    if (this.state.scanning === 1)
       return (
         <View style={styles.container}>
           <Pulse size={100} color={colors.main} />
@@ -92,10 +106,13 @@ export default class IpSearcher extends Component {
   }
 
   tryThisIp = (ip) => {
-    this.checkThisIp(this.state.inputIp).then(rep => {
-      if (!rep) {
-        Alert.alert("Sorry!", "the given IP is unreachable.")
-      }
+    this.setState({scanning: 2}, () => {
+      this.checkThisIp(this.state.inputIp).then(rep => {
+        if (!rep) {
+          Alert.alert("Sorry!", "the given IP is unreachable.")
+          this.setState({scanning: 0})
+        }
+      })
     })
   }
 
@@ -107,11 +124,16 @@ export default class IpSearcher extends Component {
           value={this.state.inputIp}
           onChangeText={text => this.setState({inputIp: text})}
           placeholder="Enter IP manually"
+          keyboardType='numeric'
           style={{width: 200, height: 50, fontSize: 17, textAlign: 'center'}}
-          onSubmit={() => this.tryThisIp(this.state.inputIp)}
+          onSubmitEditing={() => this.tryThisIp(this.state.inputIp)}
           />
-          <Button style={{marginLeft: 10}} onPress={() => this.tryThisIp(this.state.inputIp)}
-          text="Launch!"/>
+          {this.state.scanning === 2 ?
+            <Pulse style={{marginLeft: 10}} size={45} color={colors.main} />
+          :
+            <Button style={{marginLeft: 10}} onPress={() => this.tryThisIp(this.state.inputIp)}
+            text="Launch!"/>
+          }
         </View>
         <Text style={{fontSize: 25, fontStyle: 'italic'}}>- OR -</Text>
         {this.displayScanNetwork()}
