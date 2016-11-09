@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 const colors = require('../colors.json')
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default class Button extends Component {
   render() {
@@ -18,6 +19,20 @@ export default class Button extends Component {
     )
   }
 }
+
+export class IconButton extends Component {
+  render() {
+    return (
+      <TouchableOpacity
+      style={[this.props.style]}
+      onPress={this.props.onPress}
+      >
+        <Icon name={this.props.name} size={this.props.size} color={this.props.color} />
+      </TouchableOpacity>
+    )
+  }
+}
+
 
 const styles = StyleSheet.create({
   button: {

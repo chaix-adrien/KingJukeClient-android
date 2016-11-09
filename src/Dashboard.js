@@ -19,8 +19,11 @@ import {
   TouchableWithoutFeedback,
   ScrollView,
 } from 'react-native';
-import Button from './Button'
+import Button, {IconButton} from './Button'
 import * as Animatable from 'react-native-animatable';
+import Swipeout from 'react-native-swipeout'
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 const {width, height} = Dimensions.get("window")
 const colors = require('../colors.json')
@@ -33,7 +36,7 @@ export default class Dashboard extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      currentURL: "",
+      currentURL: 'https://m.youtube.com/?',
       playlist: [],
       currentSong: null,
       mode: "top",
@@ -66,7 +69,7 @@ export default class Dashboard extends Component {
   }
 
   addThisSong = (url) => {
-    if (url.split("https://m.youtube.com/watch?")[1])
+    if (url.split(MOBILE_URL_ROOT)[1])
       {
         const header = {
          method: "POST",
@@ -99,19 +102,78 @@ export default class Dashboard extends Component {
     this.setState({mode: "bottom"})
   }
 
+  goToThisSong = (url) => {
+    this.setState({currentURL: url})
+    this.swapToWebView()
+  }
+
   displayCurrentSong = () => {
     const {currentSong} = this.state
     return (
-      <TouchableOpacity style={{height: 100, backgroundColor: "#BBBBBB", margin: 5, elevation: 5}} onPress={() => this.swapToPlaylist()} >
-        <Text style={{flex: 1, fontSize: 20, fontWeight: "bold", textAlign: 'center', textAlignVertical: "center"}}>{currentSong ? currentSong.name : "NO CURRENT SONG"}</Text>
+      <TouchableOpacity
+      style={[styles.currentSongContainer, {backgroundColor: currentSong ? colors.main : "grey"}]}
+      onPress={() => {
+        if (this.state.mode === "bottom")
+          this.goToThisSong(currentSong.url)
+        else this.swapToPlaylist()
+      }}
+      >
+        <Text style={styles.currentSongText}>{currentSong ? currentSong.name : "NO CURRENT SONG"}</Text>
       </TouchableOpacity>
     )
   }
 
+  getNoteColor = (note) => {
+    if (note > 0) return "#21BA45"
+    else if (note < 0) return "#DB2828"
+    return "#767676"
+  }
+
+  voteThisSong = (url, note) => {
+    console.log("vote for song:", note)
+  }
+
   displaySong = (song, id) => {
-    return (
-      <View key={id} style={{margin: 5, borderWidth: 1, borderColor: colors.border, flex: 1, padding: 10}}>
-        <Text style={{flex: 1, fontSize: 20, fontWeight: "bold", textAlignVertical: "center"}}>{song.name}</Text>
+    const getComponent = (name) => {
+      return (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Icon name={name} color="white" size={30} />
+        </View>
+      )
+    }
+    var swipeoutBtns = [
+      {
+        component: getComponent('link'),
+        onPress: () => this.goToThisSong(song.name),
+        backgroundColor: "grey",
+      },
+      {
+        component: getComponent('minus'),
+        onPress: () => this.voteThisSong(song.name, -1),
+        backgroundColor: "#DB2828",
+      },
+      {
+        component: getComponent('plus'),
+        onPress: () => this.voteThisSong(song.name, 1),
+        backgroundColor: "#21BA45",
+      },
+    ]
+
+    return(
+      <View
+      style={{borderBottomWidth: 1, borderColor: "grey"}}
+      key={id}
+      >
+        <Swipeout
+        right={swipeoutBtns}
+        autoClose={true}
+        backgroundColor={colors.background}
+        >
+          <View style={styles.songContainer}>
+            <Text style={[styles.songNote, {borderColor: this.getNoteColor(song.note)}]}>{song.note}</Text>
+            <Text style={styles.songText}>{song.name}</Text>
+          </View>
+        </Swipeout>
       </View>
     )
   }
@@ -149,7 +211,7 @@ export default class Dashboard extends Component {
         <Animatable.View  ref={e => (this.webView = e)} style={{flex: 5}}>
           <WebView
           ref={e => (this.web = e)}
-          source={{uri: 'https://youtube.com'}}
+          source={{uri: this.state.currentURL}}
           style={{flex: 1, width: width, padding: 10, elevation: 10}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
@@ -157,7 +219,8 @@ export default class Dashboard extends Component {
             if (this.state.mode === "bottom") {
               this.swapToWebView()
             }
-            this.setState({currentURL: state.url})
+            if (this.state.currentURL !== state.url)
+              this.setState({currentURL: state.url})
           }}
           startInLoadingState={true}
           automaticallyAdjustContentInsets={false}
@@ -167,7 +230,7 @@ export default class Dashboard extends Component {
             : null
           }
         </Animatable.View>
-        <Animatable.View  ref={e => (this.playlistView = e)} style={{flex: 1, width: width}}>
+        <Animatable.View  ref={e => (this.playlistView = e)} style={{height: 110, width: width}}>
           {this.displayPlaylist()}
         </Animatable.View>
         {this.displayGoToWebButton()}
@@ -200,5 +263,48 @@ const styles = StyleSheet.create({
     width: width,
     justifyContent: "center",
     alignItems: "center"
-  }
+  },
+  currentSongContainer: {
+    height: 100,
+    margin: 5,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: colors.background
+  },
+  currentSongText: {
+    flex: 1,
+    fontSize: 20,
+    color: colors.background,
+    fontWeight: "bold",
+    textAlign: 'center',
+    textAlignVertical: "center"
+  },
+  songContainer: {
+    margin: 5,
+    flex: 1,
+    flexDirection: "row",
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  songText: {
+    flex: 1,
+    color: colors.main,
+    fontSize: 15,
+    fontWeight: "bold",
+    marginLeft: 10,
+    textAlignVertical: "center",
+  },
+  songNote: {
+    height: 30,
+    padding: 5,
+    color: colors.main,
+    fontSize: 15,
+    fontWeight: "bold",
+    textAlign: 'center',
+    margin: 2,
+    textAlignVertical: "center",
+    borderRadius: 5,
+    borderWidth: 2,
+  },
 });
