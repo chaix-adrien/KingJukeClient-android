@@ -94,7 +94,7 @@ export default class IpSearcher extends Component {
       return (
         <View style={styles.container}>
           <Pulse size={100} color={colors.main} />
-          <Text style={{top: -110, left: 0, fontStyle: 'italic', color: colors.background}}>SCANNING</Text>
+          <Text style={{textAlign: 'center', textAlignVertical: "center", top: -125, left: 0, fontStyle: 'italic', fontWeight: "bold", color: colors.background}}>SEARCHING{'\n'}YOUR{"\n"}JUKEBOX</Text>
         </View>
       )
     else

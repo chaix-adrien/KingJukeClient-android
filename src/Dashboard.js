@@ -188,7 +188,7 @@ export default class Dashboard extends Component {
             : <Text style={{flex: 1, fontSize: 20, fontWeight: "bold", textAlign: 'center', textAlignVertical: "center"}}>No song incoming, add yours !</Text>
           }
         </ScrollView>
-        <Button text="Close this JukeBox" onPress={this.props.quitServer} />
+        <IconButton name="power-off" size={30} style={{margin: 10, alignSelf: "flex-end"}} color={"grey"} onPress={this.props.quitServer} />
       </View>
     )
   }
