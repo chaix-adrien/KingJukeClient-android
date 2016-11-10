@@ -23,9 +23,39 @@ import Button, {IconButton} from './Button'
 import * as Animatable from 'react-native-animatable';
 import Swipeout from 'react-native-swipeout'
 import Icon from 'react-native-vector-icons/FontAwesome';
+var Popover = require('react-native-popover');
 
+
+const TMPtag = [
+  {
+    name: "electro",
+    color: "#304FFE",
+    textColor: "white",
+  },
+  {
+    name: "raggae",
+    color: "#C6FF00",
+    textColor: "black",
+  },
+  {
+    name: "rap",
+    color: "#DD2C00",
+    textColor: "white",
+  },
+  {
+    name: "hip-hop",
+    color: "#C51162",
+    textColor: "white",
+  },
+  {
+    name: "classique",
+    color: "#BDBDBD",
+    textColor: "black",
+  },  
+]
 
 const {width, height} = Dimensions.get("window")
+const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')
 const AUTOREFRESH_INTERVAL_SEC = 10
 const PC_URL_ROOT = "https://www.youtube.com/watch?v="
@@ -40,14 +70,15 @@ export default class Dashboard extends Component {
       playlist: [],
       currentSong: null,
       mode: "top",
+      showPopup: false,
+      popupRect: null,
     }
+    this.songRow = []
   }
 
   componentWillMount() {
     this.getPlaylist()
-    this.getCurrentSong()
     this.autorefresh = setInterval(() => {
-      this.getCurrentSong()
       this.getPlaylist()
     }, 1000 * AUTOREFRESH_INTERVAL_SEC)
   }
@@ -56,30 +87,36 @@ export default class Dashboard extends Component {
     clearInterval(this.autorefresh)
   }
 
-  getCurrentSong = () => {
-    const {serverURL} = this.props
-    fetch(serverURL).then(r => r.json())
-    .then(playlist => this.setState({currentSong: (playlist.length) ? playlist[0] : null}))
-  }
-
   getPlaylist = () => {
     const {serverURL} = this.props
-    fetch(serverURL).then(r => r.json())
-    .then(playlist => this.setState({playlist: playlist.slice(1)}))
+    fetch(serverURL + endpoints.playlist).then(r => r.json())
+    .then(playlist => {
+      playlist.playlist.forEach(s => {
+          s.tags = [0, 1].map(e => Math.floor(Math.random() * (TMPtag.length - 1))).filter(e => Math.random() < 0.6)
+      })
+      this.setState({playlist: playlist.playlist, currentSong: playlist.first_song})
+    })
+    .catch(e => console.log(e))
   }
 
-  addThisSong = (url) => {
-    if (url.split(MOBILE_URL_ROOT)[1])
-      {
-        const header = {
-         method: "POST",
-         body: PC_URL_ROOT + url.split(MOBILE_URL_ROOT)[1]
-        }
-        const {serverURL} = this.props
-        fetch(serverURL, header)
-        this.getPlaylist()
-        this.getCurrentSong()
+  OpenPopupAddSong = () => {
+    this.addSongButton.measure((ox, oy, width, height, px, py) => {
+      this.setState({showPopup: true, popupRect: {x: px, y: py, width: width, height: height}})
+    })
+
+  }
+
+  submitThisSong = (url) => {
+    this.setState({showPopup: false})
+    if (url.split(MOBILE_URL_ROOT)[1]) {
+      const header = {
+       method: "POST",
+       body: PC_URL_ROOT + url.split(MOBILE_URL_ROOT)[1]
       }
+      const {serverURL} = this.props
+      fetch(serverURL + endpoints.playlist, header)
+      .then(e => this.getPlaylist())
+    }
   }
 
   swapToWebView = () => {
@@ -89,6 +126,7 @@ export default class Dashboard extends Component {
       this.playlistView.transitionTo({flex: null, height: 110})
     if (this.goToWebButton)
       this.goToWebButton.transitionTo({top: height})
+    this.songRow.forEach(row => row._close())
     this.setState({mode: "top"})
   }
 
@@ -118,43 +156,48 @@ export default class Dashboard extends Component {
         else this.swapToPlaylist()
       }}
       >
-        <Text style={styles.currentSongText}>{currentSong ? currentSong.name : "NO CURRENT SONG"}</Text>
+        <Text style={styles.currentSongText}>{currentSong ? currentSong.title : "NO CURRENT SONG"}</Text>
       </TouchableOpacity>
     )
   }
 
-  getNoteColor = (note) => {
-    if (note > 0) return "#21BA45"
-    else if (note < 0) return "#DB2828"
+  getScoreColor = (score) => {
+    if (score > 0) return "#21BA45"
+    else if (score < 0) return "#DB2828"
     return "#767676"
   }
 
-  voteThisSong = (url, note) => {
-    console.log("vote for song:", note)
+  voteThisSong = (title, score) => {
+    const header = {
+     method: "POST",
+     body: JSON.stringify({title: title})
+   }
+   const {serverURL} = this.props
+   fetch(serverURL + endpoints.vote + (score > 0 ? "up" : "down"), header).then(e => this.getPlaylist())
   }
 
   displaySong = (song, id) => {
-    const getComponent = (name) => {
+    const getComponent = (name, color) => {
       return (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: color}}>
           <Icon name={name} color="white" size={30} />
         </View>
       )
     }
     var swipeoutBtns = [
       {
-        component: getComponent('link'),
-        onPress: () => this.goToThisSong(song.name),
+        component: getComponent('link', "grey"),
+        onPress: () => this.goToThisSong(song.url),
         backgroundColor: "grey",
       },
       {
-        component: getComponent('minus'),
-        onPress: () => this.voteThisSong(song.name, -1),
+        component: getComponent('minus', "#DB2828"),
+        onPress: () => this.voteThisSong(song.title, -1),
         backgroundColor: "#DB2828",
       },
       {
-        component: getComponent('plus'),
-        onPress: () => this.voteThisSong(song.name, 1),
+        component: getComponent('plus', "#21BA45"),
+        onPress: () => this.voteThisSong(song.title, 1),
         backgroundColor: "#21BA45",
       },
     ]
@@ -167,12 +210,30 @@ export default class Dashboard extends Component {
         <Swipeout
         right={swipeoutBtns}
         autoClose={true}
+        close={false}
+        ref={e => this.songRow[id] = e}
         backgroundColor={colors.background}
         >
-          <View style={styles.songContainer}>
-            <Text style={[styles.songNote, {borderColor: this.getNoteColor(song.note)}]}>{song.note}</Text>
-            <Text style={styles.songText}>{song.name}</Text>
-          </View>
+          <TouchableOpacity style={styles.songContainer} onPress={() => {
+            this.songRow.forEach((row, i) => {
+              if (id !== i) {
+                row._close()
+              }
+            })
+            this.songRow[id]._openRight()
+          }}>
+            <Text style={[styles.songScore, {borderColor: this.getScoreColor(song.score)}]}>{song.score}</Text>
+              <Text style={styles.songText}>{song.title}</Text>
+            <View>
+              {song.tags.map((tag, id) => 
+                <Text key={id}
+                style={[styles.tag, {backgroundColor:TMPtag[tag].color, color: TMPtag[tag].textColor}]}
+                >
+                  {TMPtag[tag].name}
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
         </Swipeout>
       </View>
     )
@@ -185,7 +246,7 @@ export default class Dashboard extends Component {
         <ScrollView style={{flex: 1}}>
           {this.state.playlist.length ?
             this.state.playlist.map((song, id) => this.displaySong(song, id))
-            : <Text style={{flex: 1, fontSize: 20, fontWeight: "bold", textAlign: 'center', textAlignVertical: "center"}}>No song incoming, add yours !</Text>
+            : <Text style={styles.noSongText}>No song incoming, add yours !</Text>
           }
         </ScrollView>
         <IconButton name="power-off" size={30} style={{margin: 10, alignSelf: "flex-end"}} color={"grey"} onPress={this.props.quitServer} />
@@ -202,6 +263,15 @@ export default class Dashboard extends Component {
           <Text style={{fontSize: 20}}>▼</Text>
         </TouchableOpacity>
       </Animatable.View>
+    )
+  }
+
+  displayAddSongPopup = () => {
+    return (
+      <View>
+        <Text>Add some tags:</Text>
+        <Button text="Submit" onPress={() => this.submitThisSong(this.state.currentURL)} />
+      </View>
     )
   }
 
@@ -226,13 +296,22 @@ export default class Dashboard extends Component {
           automaticallyAdjustContentInsets={false}
           />
           {this.state.currentURL.split("https://m.youtube.com/watch?")[1] && this.state.mode === "top" ?
-            <Button style={{margin: 10}} text="Add this song" onPress={() => this.addThisSong(this.state.currentURL)} />
+            <View ref={e => (this.addSongButton = e)} collapsable={false}>
+              <Button style={{margin: 10}} text="Add this song" onPress={() => this.OpenPopupAddSong()} />
+            </View>
             : null
           }
         </Animatable.View>
         <Animatable.View  ref={e => (this.playlistView = e)} style={{height: 110, width: width}}>
           {this.displayPlaylist()}
         </Animatable.View>
+          <Popover
+          isVisible={this.state.showPopup}
+          fromRect={this.state.popupRect}
+          placement="top"
+          onClose={() => this.setState({showPopup: false})}>
+            {this.displayAddSongPopup()}
+          </Popover>
         {this.displayGoToWebButton()}
       </View>
     );
@@ -253,7 +332,7 @@ const styles = StyleSheet.create({
     width: width,
     height: GOTOWEB_H,
     top: height,
-    opacity: 0.8,
+    opacity: 0.9,
     backgroundColor:  colors.background,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50
@@ -280,10 +359,12 @@ const styles = StyleSheet.create({
     textAlignVertical: "center"
   },
   songContainer: {
-    margin: 5,
     flex: 1,
     flexDirection: "row",
-    padding: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 5,
+    paddingBottom: 5,
     justifyContent: "center",
     alignItems: "center"
   },
@@ -295,8 +376,9 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     textAlignVertical: "center",
   },
-  songNote: {
+  songScore: {
     height: 30,
+    width: 40,
     padding: 5,
     color: colors.main,
     fontSize: 15,
@@ -306,5 +388,20 @@ const styles = StyleSheet.create({
     textAlignVertical: "center",
     borderRadius: 5,
     borderWidth: 2,
+  },
+  noSongText: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: 'center',
+    textAlignVertical: "center"
+  },
+  tag: {
+    fontWeight: 'bold',
+    margin: 2,
+    padding: 2,
+    textAlign: "center",
+    textAlignVertical: "center",
+    borderRadius: 2
   },
 });

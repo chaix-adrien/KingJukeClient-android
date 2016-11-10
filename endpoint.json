@@ -1,0 +1,6 @@
+{
+  "PORT": 9090,
+  "ping": "/jukebox",
+  "playlist": "/playlist",
+  "vote": "/vote/"
+}

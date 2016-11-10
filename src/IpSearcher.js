@@ -19,8 +19,8 @@ import {Pulse} from 'react-native-loader';
 import NetworkInfo from 'react-native-network-info';
 
 import Button from './Button'
+const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')
-const PORT = 6666
 
 export default class IpSearcher extends Component {
   constructor(props) {
@@ -51,11 +51,11 @@ export default class IpSearcher extends Component {
     if (!ip) ip = "0"
     let url = ""
     if (!ip.split("http://")[1])
-      url = "http://" + ip + ':' + PORT
+      url = "http://" + ip + ':' + endpoints.PORT
     else
       url = ip
-    return fetch(url).then(r => {
-      if (r.status === 200) {
+    return fetch(url + endpoints.ping).then(r => {
+      if (r.status === 200 && r.ok && r._bodyText === "Jukebox") {
         this.props.setServerURL(url)
         return true
       }
@@ -94,7 +94,7 @@ export default class IpSearcher extends Component {
       return (
         <View style={styles.container}>
           <Pulse size={100} color={colors.main} />
-          <Text style={{textAlign: 'center', textAlignVertical: "center", top: -125, left: 0, fontStyle: 'italic', fontWeight: "bold", color: colors.background}}>SEARCHING{'\n'}YOUR{"\n"}JUKEBOX</Text>
+          <Text style={styles.scanText}>SEARCHING{'\n'}YOUR{"\n"}JUKEBOX</Text>
         </View>
       )
     else
@@ -157,5 +157,14 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: 10,
     borderRadius: 1,
-  }
+  },
+  scanText: {
+    textAlign: 'center',
+    textAlignVertical: "center",
+    top: -125,
+    left: 0,
+    fontStyle: 'italic',
+    fontWeight: "bold",
+    color: colors.background
+  },
 });

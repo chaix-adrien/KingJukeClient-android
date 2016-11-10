@@ -40,7 +40,7 @@ export default class ytJukebox extends Component {
   }
 
   setServerURL = (url, callback) => {
-    console.log("CONNECT TO:", url)
+    console.log("CONNECT TO: ", url)
     if (callback)
       this.setState({serverURL: url}, () => callback())
     else
