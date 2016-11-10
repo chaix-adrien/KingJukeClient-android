@@ -12,8 +12,9 @@
     "react-native": "0.36.1",
     "react-native-animatable": "^0.6.1",
     "react-native-loader": "^1.1.0",
+    "react-native-modal-dropdown": "^0.3.0",
     "react-native-network-info": "^0.2.0",
-      "react-native-popover": "git+https://github.com/jeanregisser/react-native-popover.git",
+    "react-native-popover": "git+https://github.com/jeanregisser/react-native-popover.git",
     "react-native-swipeout": "https://github.com/mlumbroso/react-native-swipeout.git",
     "react-native-vector-icons": "^3.0.0"
   },

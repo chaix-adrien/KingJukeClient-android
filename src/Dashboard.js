@@ -23,8 +23,10 @@ import Button, {IconButton} from './Button'
 import * as Animatable from 'react-native-animatable';
 import Swipeout from 'react-native-swipeout'
 import Icon from 'react-native-vector-icons/FontAwesome';
-var Popover = require('react-native-popover');
+import ModalDropdown from 'react-native-modal-dropdown';
+import Popover from 'react-native-popover';
 
+import SubmitPopup from './SubmitPopup'
 
 const TMPtag = [
   {
@@ -51,7 +53,17 @@ const TMPtag = [
     name: "classique",
     color: "#BDBDBD",
     textColor: "black",
-  },  
+  },
+  {
+    name: "dub",
+    color: "#CF1162",
+    textColor: "white",
+  },
+  {
+    name: "rock",
+    color: "#00FD0D",
+    textColor: "black",
+  },
 ]
 
 const {width, height} = Dimensions.get("window")
@@ -106,7 +118,9 @@ export default class Dashboard extends Component {
 
   }
 
-  submitThisSong = (url) => {
+  addTagToSubmit = (tags) => this.submitThisSong(this.state.currentURL, tags)
+
+  submitThisSong = (url, tags) => {
     this.setState({showPopup: false})
     if (url.split(MOBILE_URL_ROOT)[1]) {
       const header = {
@@ -126,6 +140,7 @@ export default class Dashboard extends Component {
       this.playlistView.transitionTo({flex: null, height: 110})
     if (this.goToWebButton)
       this.goToWebButton.transitionTo({top: height})
+    if(this.songRow.length)
     this.songRow.forEach(row => row._close())
     this.setState({mode: "top"})
   }
@@ -225,7 +240,7 @@ export default class Dashboard extends Component {
             <Text style={[styles.songScore, {borderColor: this.getScoreColor(song.score)}]}>{song.score}</Text>
               <Text style={styles.songText}>{song.title}</Text>
             <View>
-              {song.tags.map((tag, id) => 
+              {song.tags.map((tag, id) =>
                 <Text key={id}
                 style={[styles.tag, {backgroundColor:TMPtag[tag].color, color: TMPtag[tag].textColor}]}
                 >
@@ -266,15 +281,6 @@ export default class Dashboard extends Component {
     )
   }
 
-  displayAddSongPopup = () => {
-    return (
-      <View>
-        <Text>Add some tags:</Text>
-        <Button text="Submit" onPress={() => this.submitThisSong(this.state.currentURL)} />
-      </View>
-    )
-  }
-
   render() {
     return (
       <View style={styles.container}>
@@ -310,7 +316,7 @@ export default class Dashboard extends Component {
           fromRect={this.state.popupRect}
           placement="top"
           onClose={() => this.setState({showPopup: false})}>
-            {this.displayAddSongPopup()}
+            <SubmitPopup tags={TMPtag} submitSong={this.addTagToSubmit}/>
           </Popover>
         {this.displayGoToWebButton()}
       </View>
@@ -395,13 +401,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: 'center',
     textAlignVertical: "center"
-  },
-  tag: {
-    fontWeight: 'bold',
-    margin: 2,
-    padding: 2,
-    textAlign: "center",
-    textAlignVertical: "center",
-    borderRadius: 2
   },
 });
