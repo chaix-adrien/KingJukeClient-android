@@ -24,7 +24,7 @@ export class IconButton extends Component {
   render() {
     return (
       <TouchableOpacity
-      style={[this.props.style]}
+      style={this.props.style}
       onPress={this.props.onPress}
       >
         <Icon name={this.props.name} size={this.props.size} color={this.props.color} />

@@ -30,7 +30,7 @@ const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')
 const TAGMAX = 2
 
-export default class Dashboard extends Component {
+export default class SubmitPopup extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -80,11 +80,14 @@ export default class Dashboard extends Component {
         </Text>
       )
     } else { return (
-      <Text
-        style={styles.selectText}
-      >
-        Select a tag
-      </Text>
+      <View style={{flexDirection: "row", alignItems: "center", paddingLeft: 10}}>
+        <Icon name="tag" size={20} color={colors.main} backgroundColor={colors.background} />
+        <Text
+          style={styles.selectText}
+        >
+          Select a tag
+        </Text>
+      </View>
     )}    
   }
 
@@ -127,12 +130,11 @@ const styles = StyleSheet.create({
     borderRadius: 2
   },
   selectText: {
-    borderLeftWidth: 1,
-    borderColor: colors.border,
     paddingLeft: 5,
     color: colors.main,
     fontSize: 20,
     margin: 5,
+    marginLeft: 10,
     fontStyle: 'italic'
   },
 })

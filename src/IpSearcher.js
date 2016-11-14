@@ -36,7 +36,7 @@ export default class IpSearcher extends Component {
   componentWillMount() {
     AsyncStorage.getItem('@ytjukebox:lastServerUrl', (err, rep) => {
       if (rep) {
-        this.checkThisIp(rep).then(res => {
+        this.checkThisIp(rep, this.fetch_timeout).then(res => {
           if (!res)
             this.props.stopLoading()
         })
@@ -47,7 +47,30 @@ export default class IpSearcher extends Component {
     })
   }
 
-  checkThisIp = (ip) => {
+  fetch_timeout = (url, header) => {
+    const FETCH_TIMEOUT = 5000
+    const out = new Promise((resolve, reject) => {
+      if (FETCH_TIMEOUT) {
+        var timeout = setTimeout(() => {
+          reject(new Error('Request timed out'));
+        }, FETCH_TIMEOUT);
+      }
+      return fetch(url, header)
+      .then((response) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        if (response){
+          resolve(response)
+        }
+        else reject(new Error('Response error'));
+      })
+      .catch(e => reject(new Error('Unable to reach this ip')))
+    })
+    return out
+  }
+
+  checkThisIp = (ip, fetch) => {
     if (!ip) ip = "0"
     let url = ""
     if (!ip.split("http://")[1])
@@ -78,7 +101,7 @@ export default class IpSearcher extends Component {
         const allChecks = []
         for (let i = 0; i < 256; i++) {
           const ip = domaine + '.' + i
-          allChecks.push(this.checkThisIp(ip))
+          allChecks.push(this.checkThisIp(ip, fetch))
         }
         Promise.all(allChecks).then(values => {
           if (!values.some(value => value)) {
@@ -107,7 +130,7 @@ export default class IpSearcher extends Component {
 
   tryThisIp = (ip) => {
     this.setState({scanning: 2}, () => {
-      this.checkThisIp(this.state.inputIp).then(rep => {
+      this.checkThisIp(this.state.inputIp, this.fetch_timeout).then(rep => {
         if (!rep) {
           Alert.alert("Sorry!", "the given IP is unreachable.")
           this.setState({scanning: 0})

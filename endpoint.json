@@ -2,5 +2,6 @@
   "PORT": 9090,
   "ping": "/jukebox",
   "playlist": "/playlist",
-  "vote": "/vote/"
+  "vote": "/vote/",
+  "admin": "/admin/"
 }

@@ -27,6 +27,7 @@ import ModalDropdown from 'react-native-modal-dropdown';
 import Popover from 'react-native-popover';
 
 import SubmitPopup from './SubmitPopup'
+import AdminPopup from './AdminPopup'
 
 const TMPtag = [
   {
@@ -82,9 +83,13 @@ export default class Dashboard extends Component {
       playlist: [],
       currentSong: null,
       mode: "top",
-      showPopup: false,
-      popupRect: null,
+      showSubmitPopup: false,
+      popupRectSubmit: null,
+      showAdminPopup: false,
+      popupRectAdmin: null,
+      adminMode: false,
     }
+    this.popupRectAdmin = {x: 0, y: height / 1.5, width: width, height: 0}
     this.songRow = []
   }
 
@@ -113,7 +118,7 @@ export default class Dashboard extends Component {
 
   OpenPopupAddSong = () => {
     this.addSongButton.measure((ox, oy, width, height, px, py) => {
-      this.setState({showPopup: true, popupRect: {x: px, y: py, width: width, height: height}})
+      this.setState({showSubmitPopup: true, popupRectSubmit: {x: px, y: py, width: width, height: height}})
     })
 
   }
@@ -121,7 +126,7 @@ export default class Dashboard extends Component {
   addTagToSubmit = (tags) => this.submitThisSong(this.state.currentURL, tags)
 
   submitThisSong = (url, tags) => {
-    this.setState({showPopup: false})
+    this.setState({showSubmitPopup: false})
     if (url.split(MOBILE_URL_ROOT)[1]) {
       const header = {
        method: "POST",
@@ -146,7 +151,7 @@ export default class Dashboard extends Component {
     if (this.goToWebButton)
       this.goToWebButton.transitionTo({top: height})
     if(this.songRow.length)
-      this.songRow.forEach(row => row._close ? row._close() : null)
+      this.songRow.forEach(row => row ? row._close() : null)
     this.setState({mode: "top"})
   }
 
@@ -167,6 +172,20 @@ export default class Dashboard extends Component {
   }
 
   switchAdminMode = (goTo) => {
+    this.setState({showAdminPopup: false, adminMode: goTo})
+  }
+
+  pauseCurrentSong = () => {
+    console.log("pause")
+  }
+
+  nextSong = () => {
+    console.log("next")
+  }
+
+  removeThisSong = (song) => {
+    console.log("remove the song " + song.title)
+  }
 
   displayCurrentSong = () => {
     let {currentSong} = this.state
@@ -181,7 +200,25 @@ export default class Dashboard extends Component {
         else this.swapToPlaylist()
       }}
       >
-        <Text style={styles.currentSongText}>{currentSong ? currentSong.title : "NO CURRENT SONG"}</Text>
+        <Text style={styles.currentSongText}>{currentSong.title ? currentSong.title : "NO CURRENT SONG"}</Text>
+        {this.state.adminMode && currentSong.title ?
+          <View style={{alignItems: "center", margin: 5, justifyContent: "space-around"}}>
+            <IconButton
+            style={styles.adminNavButtons}
+            name="play" color={colors.background}
+            size={30}
+            onPress={this.pauseCurrentSong}
+            />
+            <IconButton
+            style={styles.adminNavButtons}
+            name="forward"
+            color={colors.background}
+            size={30}
+            onPress={this.nextSong}
+            />
+          </View>
+          :null
+        }
       </TouchableOpacity>
     )
   }
@@ -201,10 +238,10 @@ export default class Dashboard extends Component {
   }
 
   displaySong = (song, id) => {
-    const getComponent = (name, color) => {
+    const getComponent = (name, bgcolor) => {
       return (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: color}}>
-          <Icon name={name} color="white" size={30} />
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: bgcolor}}>
+          <Icon name={name} color={colors.background} size={30} />
         </View>
       )
     }
@@ -225,7 +262,12 @@ export default class Dashboard extends Component {
         backgroundColor: "#21BA45",
       },
     ]
-
+    if (this.state.adminMode)
+      swipeoutBtns.push({
+        component: getComponent('trash', "black"),
+        onPress: () => this.removeThisSong(song),
+        backgroundColor: "#21BA45",
+      })
     return(
       <View
       style={{borderBottomWidth: 1, borderColor: "grey"}}
@@ -273,7 +315,16 @@ export default class Dashboard extends Component {
             : <Text style={styles.noSongText}>No song incoming, add yours !</Text>
           }
         </ScrollView>
-        <IconButton name="power-off" size={30} style={{margin: 10, alignSelf: "flex-end"}} color={"grey"} onPress={this.props.quitServer} />
+        <View style={{flexDirection: "row", justifyContent: "flex-end"}}>
+          <IconButton name={this.state.adminMode ? "lock" : "key"} size={30} style={{margin: 10}} color={"grey"}
+          onPress={() => {
+            if (this.state.adminMode)
+              this.setState({adminMode: false})
+            else
+              this.setState({showAdminPopup: true})
+          }} />
+          <IconButton name="power-off" size={30} style={{margin: 10}} color={"grey"} onPress={this.props.quitServer} />
+        </View>
       </View>
     )
   }
@@ -294,7 +345,8 @@ export default class Dashboard extends Component {
     return (
       <View style={styles.container}>
         <Animatable.View  ref={e => (this.webView = e)} style={{flex: 5}}>
-          <WebView
+         
+         <WebView
           ref={e => (this.web = e)}
           source={{uri: this.state.currentURL}}
           style={{flex: 1, width: width, padding: 10, elevation: 10}}
@@ -320,13 +372,20 @@ export default class Dashboard extends Component {
         <Animatable.View  ref={e => (this.playlistView = e)} style={{height: 110, width: width}}>
           {this.displayPlaylist()}
         </Animatable.View>
-          <Popover
-          isVisible={this.state.showPopup}
-          fromRect={this.state.popupRect}
-          placement="top"
-          onClose={() => this.setState({showPopup: false})}>
-            <SubmitPopup tags={TMPtag} submitSong={this.addTagToSubmit}/>
-          </Popover>
+        <Popover
+        isVisible={this.state.showSubmitPopup}
+        fromRect={this.state.popupRectSubmit}
+        placement="top"
+        onClose={() => this.setState({showSubmitPopup: false})}>
+          <SubmitPopup tags={TMPtag} submitSong={this.addTagToSubmit}/>
+        </Popover>
+        <Popover
+        isVisible={this.state.showAdminPopup}
+        fromRect={this.popupRectAdmin}
+        placement="top"
+        onClose={() => this.setState({showAdminPopup: false})}>
+          <AdminPopup apiURL={this.props.serverURL} goToAdminMode={this.switchAdminMode}/>
+        </Popover>
         {this.displayGoToWebButton()}
       </View>
     );
@@ -419,5 +478,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: 'center',
     textAlignVertical: "center"
+  },
+  adminNavButtons: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
+    height : 40,
+    borderRadius: 2,
+    borderColor: colors.background,
+    borderWidth: 2,
+    padding: 4
   },
 });
