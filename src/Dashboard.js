@@ -129,7 +129,12 @@ export default class Dashboard extends Component {
       }
       const {serverURL} = this.props
       fetch(serverURL + endpoints.playlist, header)
-      .then(e => this.getPlaylist())
+      .then(e => {
+        if (e.status === 201)
+          this.getPlaylist()
+        else
+          Alert.alert("You can't submit this song:", e._bodyText)
+      })
     }
   }
 
@@ -141,7 +146,7 @@ export default class Dashboard extends Component {
     if (this.goToWebButton)
       this.goToWebButton.transitionTo({top: height})
     if(this.songRow.length)
-    this.songRow.forEach(row => row._close())
+      this.songRow.forEach(row => row._close ? row._close() : null)
     this.setState({mode: "top"})
   }
 
@@ -156,15 +161,20 @@ export default class Dashboard extends Component {
   }
 
   goToThisSong = (url) => {
-    this.setState({currentURL: url})
+    if (url)
+      this.setState({currentURL: url})
     this.swapToWebView()
   }
 
+  switchAdminMode = (goTo) => {
+
   displayCurrentSong = () => {
-    const {currentSong} = this.state
+    let {currentSong} = this.state
+    if (!currentSong)
+      currentSong = {title: null}
     return (
       <TouchableOpacity
-      style={[styles.currentSongContainer, {backgroundColor: currentSong ? colors.main : "grey"}]}
+      style={[styles.currentSongContainer, {backgroundColor: currentSong.title ? colors.main : "grey"}]}
       onPress={() => {
         if (this.state.mode === "bottom")
           this.goToThisSong(currentSong.url)
@@ -185,10 +195,9 @@ export default class Dashboard extends Component {
   voteThisSong = (title, score) => {
     const header = {
      method: "POST",
-     body: JSON.stringify({title: title})
    }
    const {serverURL} = this.props
-   fetch(serverURL + endpoints.vote + (score > 0 ? "up" : "down"), header).then(e => this.getPlaylist())
+   fetch(serverURL + endpoints.vote + (score > 0 ? "up/" : "down/") + title, header).then(e => this.getPlaylist())
   }
 
   displaySong = (song, id) => {
@@ -206,12 +215,12 @@ export default class Dashboard extends Component {
         backgroundColor: "grey",
       },
       {
-        component: getComponent('minus', "#DB2828"),
+        component: getComponent(song.has_voted !== -1 ? 'minus' : 'check', "#DB2828"),
         onPress: () => this.voteThisSong(song.title, -1),
         backgroundColor: "#DB2828",
       },
       {
-        component: getComponent('plus', "#21BA45"),
+        component: getComponent(song.has_voted !== 1 ? 'plus' : 'check', "#21BA45"),
         onPress: () => this.voteThisSong(song.title, 1),
         backgroundColor: "#21BA45",
       },
@@ -325,6 +334,14 @@ export default class Dashboard extends Component {
 }
 
 const styles = StyleSheet.create({
+  tag: {
+    fontWeight: 'bold',
+    margin: 2,
+    padding: 2,
+    textAlign: "center",
+    textAlignVertical: "center",
+    borderRadius: 2
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -354,6 +371,7 @@ const styles = StyleSheet.create({
     margin: 5,
     elevation: 10,
     borderWidth: 1,
+    flexDirection: "row",
     borderColor: colors.background
   },
   currentSongText: {
