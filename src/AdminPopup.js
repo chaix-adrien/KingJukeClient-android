@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import Button, {IconButton} from './Button'
 import {Pulse} from 'react-native-loader';
+import base64 from 'base-64'
+
 
 const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')

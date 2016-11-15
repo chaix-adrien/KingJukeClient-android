@@ -318,16 +318,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center"
   },
-  adminNavButtons: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 40,
-    height : 40,
-    borderRadius: 2,
-    borderColor: colors.background,
-    borderWidth: 2,
-    padding: 4
-  },
   toolBarContainerIcons: {
     backgroundColor: colors.background,
     borderColor: colors.border,
