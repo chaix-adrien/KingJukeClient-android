@@ -4,8 +4,9 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-const colors = require('../colors.json')
 import Icon from 'react-native-vector-icons/FontAwesome';
+
+const colors = require('../colors.json')
 
 export default class Button extends Component {
   render() {

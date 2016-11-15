@@ -6,31 +6,17 @@
 
 import React, { Component } from 'react';
 import {
-  AppRegistry,
   StyleSheet,
   Text,
   View,
   TextInput,
-  TouchableOpacity,
   Alert,
-  Dimensions,
-  AsyncStorage,
-  WebView,
-  TouchableWithoutFeedback,
-  ScrollView,
 } from 'react-native';
 import Button, {IconButton} from './Button'
-import * as Animatable from 'react-native-animatable';
-import Swipeout from 'react-native-swipeout'
-import Icon from 'react-native-vector-icons/FontAwesome';
-import ModalDropdown from 'react-native-modal-dropdown';
-import Popover from 'react-native-popover';
 import {Pulse} from 'react-native-loader';
-import base64 from 'base-64'
 
 const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')
-const TAGMAX = 2
 
 export default class AdminPopup extends Component {
   constructor(props) {

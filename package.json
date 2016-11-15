@@ -9,6 +9,7 @@
   "dependencies": {
     "base-64": "^0.1.0",
     "events": "^1.1.1",
+    "pubsub-js": "^1.5.4",
     "react": "^15.3.2",
     "react-native": "0.36.1",
     "react-native-animatable": "^0.6.1",
