@@ -12,6 +12,7 @@ import Button, {IconButton} from './Button'
 import * as Animatable from 'react-native-animatable';
 import Popover from 'react-native-popover';
 import PubSub from 'pubsub-js'
+import Keychain from 'react-native-keychain'
 
 import Playlist from './Playlist'
 import SubmitPopup from './SubmitPopup'

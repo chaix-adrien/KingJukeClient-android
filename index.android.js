@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import {Pulse} from 'react-native-loader';
 import * as Animatable from 'react-native-animatable';
+import Keychain from 'react-native-keychain'
 
 import IpSearcher from './src/IpSearcher';
 import Dashboard from './src/Dashboard';
@@ -50,6 +51,7 @@ export default class ytJukebox extends Component {
   }
 
   quitServer = () => {
+    Keychain.resetGenericPassword()
     AsyncStorage.removeItem('@ytjukebox:lastServerUrl')
     this.setState({serverURL: "", loaded: true})
   }
