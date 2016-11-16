@@ -8,6 +8,8 @@ import {
 import Swipeout from 'react-native-swipeout'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PubSub from 'pubsub-js'
+import Keychain from 'react-native-keychain'
+import base64 from 'base-64'
 
 const TMPtag = [
   {
@@ -63,8 +65,14 @@ export default class PlaylistSong extends Component {
       const {id} = this.props
       const emmiterID = parseInt(songEmmiter)
       if (emmiterID !== id)
-        this.swipeout._close()
+        if (this.swipeout) {
+          this.swipeout._close()
+        }
     })
+  }
+
+  componentWillUnmount() {
+    PubSub.unsubscribe("closePlaylistSongs")
   }
 
   voteThisSong = (title, score) => {
@@ -72,12 +80,18 @@ export default class PlaylistSong extends Component {
      method: "POST",
    }
    const {serverURL} = this.props
-   console.log(serverURL + endpoints.vote + (score > 0 ? "up/" : "down/") + title)
    fetch(serverURL + endpoints.vote + (score > 0 ? "up/" : "down/") + title, header).then(e => this.props.reload())
   }
 
   removeThisSong = (song) => {
-    console.log("remove the song " + song.title)
+    Keychain.getGenericPassword().then(credentials => {
+      const {username, password} = credentials
+      const tmpCredentials = base64.encode(`${username}:${password}`)
+      const header = new Headers()
+      header.append("Authorization", "Basic " + tmpCredentials)
+      fetch(this.props.serverURL + endpoints.admin + "delete", {method: 'DELETE', body: song.title, headers : header})
+      .then(e => this.props.reload())
+    })
   }
 
 

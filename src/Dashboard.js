@@ -100,7 +100,6 @@ export default class Dashboard extends Component {
     fetch(serverURL + endpoints.playlist).then(r => r.json())
     .then(playlist => {
       playlist.playlist.forEach(s => (s.tags = [])) // waiting for integration
-      
       this.setState({playlist: playlist.playlist, currentSong: playlist.first_song})
     })
     .catch(e => console.log(e))
@@ -165,6 +164,9 @@ export default class Dashboard extends Component {
 
   switchAdminMode = (goTo) => {
     PubSub.publish('closePlaylistSongs', "-1")
+    if (goTo === false) {
+      Keychain.resetGenericPassword()
+    }
     this.setState({showAdminPopup: false, adminMode: goTo})
   }
 

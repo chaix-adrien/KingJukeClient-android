@@ -65,6 +65,7 @@ export default class Playlist extends Component {
         serverURL={serverURL}
         adminMode={adminMode}
         currentSong={currentSong}
+        reload={reload}
         onPress={onPressCurrentSong}/>
         <ScrollView style={{flex: 1}}>
         {playlist.length ?

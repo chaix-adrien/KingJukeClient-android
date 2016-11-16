@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {IconButton} from './Button'
+import Keychain from 'react-native-keychain'
+import base64 from 'base-64'
 
 const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')
@@ -19,18 +21,32 @@ export default class CurrentSong extends Component {
   }
 
   pauseCurrentSong = () => {
-    console.log("pause")
+    Keychain.getGenericPassword().then(credentials => {
+      const {username, password} = credentials
+      const {currentSong} = this.props
+      const tmpCredentials = base64.encode(`${username}:${password}`)
+      const header = new Headers()
+      header.append("Authorization", "Basic " + tmpCredentials)
+      fetch(this.props.serverURL + endpoints.admin + (currentSong.playing ? "pause" : "play"), {method: 'POST', headers : header})
+      .then(e => this.props.reload())
+    })
   }
 
   nextSong = () => {
-    console.log("next")
+    Keychain.getGenericPassword().then(credentials => {
+      const {username, password} = credentials
+      const tmpCredentials = base64.encode(`${username}:${password}`)
+      const header = new Headers()
+      header.append("Authorization", "Basic " + tmpCredentials)
+      fetch(this.props.serverURL + endpoints.admin + "next", {method: 'POST', headers : header}).then(e => this.props.reload())
+    })
   }
 
   render() {
     let {currentSong, adminMode, onPress} = this.props
+    if (currentSong)
     if (currentSong === null)
       currentSong = {title: null}
-    console.log(currentSong, currentSong.current_time / currentSong.length)
     return (
       <TouchableOpacity
       style={[styles.currentSongContainer, {backgroundColor: currentSong.title ? colors.main : "grey"}]}
@@ -46,7 +62,7 @@ export default class CurrentSong extends Component {
             <View style={{flex: 0.2, alignItems: "center", margin: 5, justifyContent: "space-around"}}>
               <IconButton
               style={styles.adminNavButtons}
-              name="play" color={colors.background}
+              name={currentSong.playing ? "pause" : "play"} color={colors.background}
               size={30}
               onPress={this.pauseCurrentSong}
               />

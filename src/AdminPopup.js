@@ -13,8 +13,9 @@ import {
   Alert,
 } from 'react-native';
 import Button, {IconButton} from './Button'
-import {Pulse} from 'react-native-loader';
+import {Pulse} from 'react-native-loader'
 import base64 from 'base-64'
+import Keychain from 'react-native-keychain'
 
 
 const endpoints = require('../endpoint.json')
@@ -35,14 +36,15 @@ export default class AdminPopup extends Component {
       const tmpCredentials = base64.encode(`${usr}:${pass}`)
       const header = new Headers()
       header.append("Authorization", "Basic " + tmpCredentials)
-      header.append("method", "POST")
-      fetch(this.props.apiURL + endpoints.admin + "log", {method: 'POST', headers : header})
+      fetch(this.props.apiURL + endpoints.admin + "log", {method: 'GET', headers : header})
       .then(e => {
         this.setState({loading: false}, () => {
           if (e.status !== 200)
             Alert.alert("Sorry", "Wrong credentials.")
-          else
+          else {
+            Keychain.setGenericPassword(usr, pass)
             this.props.goToAdminMode(true)
+          }
         })
       })
       .catch(e => {
