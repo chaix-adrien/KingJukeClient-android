@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Swipeout from 'react-native-swipeout'
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Foundation';
 import PubSub from 'pubsub-js'
 import Keychain from 'react-native-keychain'
 import base64 from 'base-64'
@@ -102,26 +102,26 @@ export default class PlaylistSong extends Component {
   }
 
   getSwipeOutComponents = (song) => {
-    const getComponent = (name, bgcolor) => {
+    const getComponent = (name, bgcolor, id) => {
       return (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: bgcolor}}>
-        <Icon name={name} color={colors.background} size={30} />
+        <View style={[styles.buttonContainer, {backgroundColor: bgcolor}]}>
+          <Icon style={styles.buttonIcon} name={name} color={colors.background} size={30} />
         </View>
         )
     }
     const swipeoutBtns = [
     {
-      component: getComponent('link', "grey"),
+      component: getComponent('link', "grey", 12),
       onPress: () => this.props.goToThisSong(song.url),
       backgroundColor: "grey",
     },
     {
-      component: getComponent(song.has_voted !== -1 ? 'minus' : 'check', "#DB2828"),
+      component: getComponent(song.has_voted !== -1 ? 'skull' : 'check', "#DB2828"),
       onPress: () => this.voteThisSong(song.title, -1),
       backgroundColor: "#DB2828",
     },
     {
-      component: getComponent(song.has_voted !== 1 ? 'plus' : 'check', "#21BA45"),
+      component: getComponent(song.has_voted !== 1 ? 'heart' : 'check', "#21BA45"),
       onPress: () => this.voteThisSong(song.title, 1),
       backgroundColor: "#21BA45",
     }]
@@ -147,7 +147,7 @@ export default class PlaylistSong extends Component {
     const {adminMode, serverURL, song, id} = this.props
     return(
       <View
-      style={{borderBottomWidth: 1, borderColor: "grey"}}
+      style={{borderBottomWidth: 1, borderColor: "black"}}
       >
         <Swipeout
         right={this.getSwipeOutComponents(song)}
@@ -214,5 +214,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
     borderRadius: 2
+  },
+  buttonContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderLeftWidth: 1,
+    borderColor: colors.border
+  },
+  buttonIcon: {
+    textShadowColor: "black",
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 10
   },
 })

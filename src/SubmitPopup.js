@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TextInput,
 } from 'react-native';
 import Button from './Button'
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -15,6 +16,7 @@ export default class SubmitPopup extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      url: "",
       toSendTags: Array.from({length: TAGMAX}, () => null)
     }
   }
@@ -85,17 +87,35 @@ export default class SubmitPopup extends Component {
     )
   }
 
+  getUrlField = () => {
+    return (
+      <View>
+        <Text style={styles.titles}>Song url:</Text>
+        <TextInput
+        style={{fontSize: 10, height: 30}}
+        value={this.state.url}
+        onChangeText={text => this.setState({url: text})}
+        placeholder="https://www.youtube.com/..."
+        />
+      </View>
+    )
+  }
+
   render() {
     const {toSendTags} = this.state
     return (
       <View style={{padding: 10}}>
-        <Text style={{fontSize: 25, color: colors.main, marginBottom: 5}}>Add some tags:</Text>
+        {this.props.urlField ?
+          this.getUrlField()
+          : null
+        }
+        <Text style={styles.titles}>Add some tags:</Text>
         {this.renderModal(0)}
         {toSendTags[0] !== null ?
           this.renderModal(1)
           : null
         }
-        <Button style={{marginTop: 10}} text="Submit" onPress={() => this.props.submitSong(toSendTags)} />
+        <Button style={{marginTop: 10}} text="Submit" onPress={() => this.props.submitSong(toSendTags, this.state.url)} />
       </View>
     )
   }
@@ -117,5 +137,10 @@ const styles = StyleSheet.create({
     margin: 5,
     marginLeft: 10,
     fontStyle: 'italic'
+  },
+  titles: {
+    fontSize: 25,
+    color: colors.main,
+    marginBottom: 5
   },
 })

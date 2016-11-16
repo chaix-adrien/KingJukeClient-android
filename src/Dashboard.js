@@ -106,13 +106,16 @@ export default class Dashboard extends Component {
     .catch(e => console.log(e))
   }
 
-  addTagToSubmit = (tags) => this.submitThisSong(this.state.currentURL, tags)
+  addTagToSubmit = (tags, url) => this.submitThisSong(url ? url : this.state.currentURL, tags)
   submitThisSong = (url, tags) => {
-    this.setState({showSubmitPopup: false})
-    if (url.split(MOBILE_URL_ROOT)[1]) {
+    if (url.split(MOBILE_URL_ROOT)[1] || url.split(PC_URL_ROOT)[1]) {
+      this.setState({showSubmitPopup: false})
+      if (url.split(MOBILE_URL_ROOT)[1]) {
+        url = PC_URL_ROOT + url.split(MOBILE_URL_ROOT)[1]
+      }
       const header = {
        method: "POST",
-       body: PC_URL_ROOT + url.split(MOBILE_URL_ROOT)[1]
+       body: url
       }
       const {serverURL} = this.props
       fetch(serverURL + endpoints.playlist, header)
@@ -122,12 +125,14 @@ export default class Dashboard extends Component {
         else
           Alert.alert("You can't submit this song:", e._bodyText)
       })
+    } else {
+      Alert.alert("You can't submit this song:", "Invalid URL.")
     }
   }
 
-  OpenPopupAddSong = () => {
+  OpenPopupAddSong = (link) => {
     this.addSongButton.measure((ox, oy, width, height, px, py) => {
-      this.setState({showSubmitPopup: true, popupRectSubmit: {x: px, y: py, width: width, height: height}})
+      this.setState({showSubmitPopup: link, popupRectSubmit: {x: px, y: py, width: width, height: height}})
     })
   }
 
@@ -227,11 +232,15 @@ export default class Dashboard extends Component {
     if (this.state.currentURL.split("https://m.youtube.com/watch?")[1] && this.state.mode === "top")
       return (
         <View ref={e => (this.addSongButton = e)} collapsable={false}>
-          <Button style={{margin: 10}} text="Add this song" onPress={() => this.OpenPopupAddSong()} />
+          <Button style={{margin: 10}} text="Add this song" onPress={() => this.OpenPopupAddSong(this.state.currentURL)} />
         </View>
       )
     else
-      return null
+      return (
+        <View ref={e => (this.addSongButton = e)} collapsable={false}>
+          <Button style={{margin: 10}} text="Add song" onPress={() => this.OpenPopupAddSong("byLink")} />
+        </View>
+      )
   }
 
   getToolBar = () => {
@@ -258,11 +267,11 @@ export default class Dashboard extends Component {
 
   getSubmitPopup = () =>
   <Popover
-  isVisible={this.state.showSubmitPopup}
+  isVisible={this.state.showSubmitPopup !== false}
   fromRect={this.state.popupRectSubmit}
   placement="top"
   onClose={() => this.setState({showSubmitPopup: false})}>
-    <SubmitPopup tags={TMPtag} submitSong={this.addTagToSubmit}/>
+    <SubmitPopup tags={TMPtag} urlField={this.state.showSubmitPopup === "byLink"} submitSong={this.addTagToSubmit}/>
   </Popover>
 
   getAdminPopup = () => 

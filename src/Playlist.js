@@ -58,7 +58,9 @@ export default class Playlist extends Component {
   }
 
   render() {
-    const {playlist, currentSong, onPressCurrentSong, adminMode, serverURL, reload} = this.props
+    let {playlist, currentSong, onPressCurrentSong, adminMode, serverURL, reload} = this.props
+    if (!currentSong)
+      currentSong = {title: null}
     return (
       <View style={{flex: 1}}>
         <CurrentSong
@@ -79,7 +81,7 @@ export default class Playlist extends Component {
             reload={reload}
             />
           )
-          : <Text style={styles.noSongText}>No song incoming, add yours !</Text>
+          : <Text style={styles.noSongText}>{currentSong.title ? "No song incoming, add yours !" : ""}</Text>
         }
         </ScrollView>
       </View>
