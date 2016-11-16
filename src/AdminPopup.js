@@ -42,6 +42,7 @@ export default class AdminPopup extends Component {
           if (e.status !== 200)
             Alert.alert("Sorry", "Wrong credentials.")
           else {
+            this.props.toggleToolBar()
             Keychain.setGenericPassword(usr, pass)
             this.props.goToAdminMode(true)
           }

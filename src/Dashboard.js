@@ -270,7 +270,7 @@ export default class Dashboard extends Component {
   fromRect={this.popupRectAdmin}
   placement="top"
   onClose={() => this.setState({showAdminPopup: false})}>
-    <AdminPopup apiURL={this.props.serverURL} goToAdminMode={this.switchAdminMode}/>
+    <AdminPopup apiURL={this.props.serverURL} goToAdminMode={this.switchAdminMode} toggleToolBar={this.toggleToolBar}/>
   </Popover>
 
 

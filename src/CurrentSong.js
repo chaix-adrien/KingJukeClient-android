@@ -44,7 +44,6 @@ export default class CurrentSong extends Component {
 
   render() {
     let {currentSong, adminMode, onPress} = this.props
-    if (currentSong)
     if (currentSong === null)
       currentSong = {title: null}
     return (
