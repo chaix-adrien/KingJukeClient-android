@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  BackAndroid,
   WebView,
 } from 'react-native';
 import Button, {IconButton} from './Button'
@@ -70,7 +71,7 @@ export default class Dashboard extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      currentURL: 'https://m.youtube.com/?',
+      currentURL: 'https://m.youtube.com/',
       playlist: [],
       currentSong: null,
       mode: "top",
@@ -81,7 +82,8 @@ export default class Dashboard extends Component {
       adminMode: false,
       isToolBarOpen: false,
     }
-    this.popupRectAdmin = {x: 0, y: height / 1.5, width: width, height: 0}
+    this.urlNav = ['https://m.youtube.com/']
+    BackAndroid.addEventListener('hardwareBackPress', this.goToPreviousUrl)
   }
 
   componentWillMount() {
@@ -145,8 +147,11 @@ export default class Dashboard extends Component {
       this.goToWebButton.transitionTo({top: height})
     if (this.state.isToolBarOpen)
       this.toggleToolBar()
+    BackAndroid.addEventListener('hardwareBackPress', this.goToPreviousUrl)
+    BackAndroid.removeEventListener('hardwareBackPress', this.swapToWebView)
     PubSub.publish('closePlaylistSongs', "-1")
     this.setState({mode: "top"})
+    return true
   }
 
   swapToPlaylist = () => {
@@ -156,6 +161,8 @@ export default class Dashboard extends Component {
       this.playlistView.transitionTo({flex: 5})
     if (this.goToWebButton)
       this.goToWebButton.transitionTo({top: 100 - GOTOWEB_H})
+    BackAndroid.removeEventListener('hardwareBackPress', this.goToPreviousUrl)
+    BackAndroid.addEventListener('hardwareBackPress', this.swapToWebView)
     this.setState({mode: "bottom"})
   }
  
@@ -180,6 +187,15 @@ export default class Dashboard extends Component {
     if (url)
       this.setState({currentURL: url})
     this.swapToWebView()
+  }
+
+  goToPreviousUrl = () => {
+    if (this.urlNav.length === 1)
+      return true
+    const previousURL = this.urlNav.slice(-2)[0]
+    this.setState({currentURL: previousURL})
+    this.urlNav.pop()
+    return true
   }
 
 
@@ -207,7 +223,10 @@ export default class Dashboard extends Component {
       this.swapToWebView()
     }
     if (this.state.currentURL !== state.url)
-      this.setState({currentURL: state.url})
+      {
+        this.setState({currentURL: state.url})
+        this.urlNav.push(state.url)
+      }
   }}
   startInLoadingState={true}
   automaticallyAdjustContentInsets={false}
@@ -235,12 +254,14 @@ export default class Dashboard extends Component {
           <Button style={{margin: 10}} text="Add this song" onPress={() => this.OpenPopupAddSong(this.state.currentURL)} />
         </View>
       )
-    else
+    else if (this.state.mode === "top")
       return (
         <View ref={e => (this.addSongButton = e)} collapsable={false}>
           <Button style={{margin: 10}} text="Add song" onPress={() => this.OpenPopupAddSong("byLink")} />
         </View>
       )
+    else
+      return null
   }
 
   getToolBar = () => {
