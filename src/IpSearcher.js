@@ -75,15 +75,14 @@ export default class IpSearcher extends Component {
         return true
       }
       return false
-    })
-    .catch(e => {
-      return false
-    })
+    }).catch(e => console.log(e))
+
   }
 
   getServerIp = () => {
     this.setState({scanning: 1}, () => {
       NetworkInfo.getIPAddress(ip => {
+        console.log("My Ip: " + ip)
         if (!ip) {
           this.setState({scanning: 0})
           Alert.alert("Wait", "Where is your internet conexion ?")
