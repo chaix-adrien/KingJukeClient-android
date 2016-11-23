@@ -65,8 +65,12 @@ export default class IpSearcher extends Component {
   checkThisIp = (ip, fetch) => {
     if (!ip) ip = "0"
     let url = ""
-    if (!ip.split("http://")[1])
-      url = "http://" + ip + ':' + endpoints.PORT
+    if (!ip.split("http://")[1]) {
+      if (ip.indexOf(":") === -1)
+        url = "http://" + ip + ':' + endpoints.PORT
+      else
+        url = "http://" + ip
+    }
     else
       url = ip
     return fetch(url + endpoints.ping).then(r => {
