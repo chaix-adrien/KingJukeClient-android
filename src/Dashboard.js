@@ -78,10 +78,11 @@ export default class Dashboard extends Component {
       showSubmitPopup: false,
       popupRectSubmit: null,
       showAdminPopup: false,
-      popupRectAdmin: null,
       adminMode: false,
       isToolBarOpen: false,
+      theme: "Anything",
     }
+    this.popupRectAdmin = {x: width / 2, y: height / 1.5, width: 1, height: 1}
     this.urlNav = ['https://m.youtube.com/']
     BackAndroid.addEventListener('hardwareBackPress', this.goToPreviousUrl)
   }
@@ -103,7 +104,7 @@ export default class Dashboard extends Component {
     fetch(serverURL + endpoints.playlist).then(r => r.json())
     .then(playlist => {
       playlist.playlist.forEach(s => (s.tags = [])) // waiting for integration
-      this.setState({playlist: playlist.playlist, currentSong: playlist.first_song})
+      this.setState({playlist: playlist.playlist, currentSong: playlist.first_song, theme: playlist.theme})
     })
     .catch(e => console.log(e))
   }
@@ -251,13 +252,15 @@ export default class Dashboard extends Component {
     if (this.state.currentURL.split("https://m.youtube.com/watch?")[1] && this.state.mode === "top")
       return (
         <View ref={e => (this.addSongButton = e)} collapsable={false}>
-          <Button style={{margin: 10}} text="Add this song" onPress={() => this.OpenPopupAddSong(this.state.currentURL)} />
+          <Text style={styles.themeText}>mood: {this.state.theme}</Text>
+          <Button style={{margin: 10, marginTop: 3}} text="Add this song" onPress={() => this.OpenPopupAddSong(this.state.currentURL)} />
         </View>
       )
     else if (this.state.mode === "top")
       return (
         <View ref={e => (this.addSongButton = e)} collapsable={false}>
-          <Button style={{margin: 10}} text="Add song" onPress={() => this.OpenPopupAddSong("byLink")} />
+          <Text style={styles.themeText}>mood: {this.state.theme}</Text>
+          <Button style={{margin: 10, marginTop: 3}} text="Add song" onPress={() => this.OpenPopupAddSong("byLink")} />
         </View>
       )
     else
@@ -375,5 +378,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: width,
     top: height - 100 - 45,
+  },
+  themeText: {
+    fontStyle: "italic",
+    textAlign: "center",
   }
 });
