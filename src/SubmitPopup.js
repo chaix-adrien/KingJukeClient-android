@@ -21,16 +21,20 @@ export default class SubmitPopup extends Component {
     }
   }
 
-  _onSelec = (id, sel, modalId) => {
+  _onSelec = (id, sel, modalId, tags) => {
     const newTags = this.state.toSendTags.slice(0)
-    newTags[modalId] = parseInt(id) - 1
-    if (newTags[modalId] === -1)
+    newTags[modalId] = sel
+    if (parseInt(id) - 1 === -1) // if None was selected
       {
         newTags[0] = null
         newTags[1] = null
       }
     this.setState({toSendTags: newTags})
     return true
+  }
+
+  _getTag = (name) => {
+    return this.props.tags.find(tag => tag.name === name)
   }
 
   _renderRow = (row, id) => {
@@ -41,7 +45,7 @@ export default class SubmitPopup extends Component {
     return (
       <Text style={[styles.tag, {
         backgroundColor:this.props.tags[tag].color,
-        color: this.props.tags[tag].textColor,
+        color: "white",
         fontSize: 20
       }]}>
         {row}
@@ -54,12 +58,12 @@ export default class SubmitPopup extends Component {
     if (toSendTags[modalId] !== null) { return (
         <Text
         style={[styles.tag, {
-          backgroundColor:this.props.tags[toSendTags[modalId]].color,
-          color: this.props.tags[toSendTags[modalId]].textColor,
+          backgroundColor: this._getTag(toSendTags[modalId]).color,
+          color: "white",
           fontSize: 20,
           margin: 5,
         }]}>
-          {this.props.tags[toSendTags[modalId]].name}
+          {toSendTags[modalId]}
         </Text>
       )
     } else { return (
@@ -74,16 +78,31 @@ export default class SubmitPopup extends Component {
     )}    
   }
 
-  renderModal = (modalId) => {
+  renderModal = (modalId, tags) => {
     return (
         <ModalDropdown
-        options={["none"].concat(this.props.tags).map(tag => tag.name)}
+        options={["none"].concat(tags).map(tag => tag.name)}
         dropdownStyle={{padding: 5, flex: 1}}
-        onSelect={(i, sel) => this._onSelec(i, sel, modalId)}
+        onSelect={(i, sel) => this._onSelec(i, sel, modalId, tags)}
         renderRow={this._renderRow}
         >
           {this._renderButton(modalId)}
         </ModalDropdown>
+    )
+  }
+
+  renderAllModal = () => {
+    const {toSendTags} = this.state
+    if (this.props.tags.length === 0) return null
+    return (
+      <View>
+        <Text style={styles.titles}>Add some tags:</Text>
+        {this.renderModal(0, this.props.tags)}
+        {toSendTags[0] !== null ?
+          this.renderModal(1, this.props.tags.filter((t, id) => t.name !== toSendTags[0]))
+          : null
+        }
+      </View>
     )
   }
 
@@ -92,7 +111,7 @@ export default class SubmitPopup extends Component {
       <View>
         <Text style={styles.titles}>Song url:</Text>
         <TextInput
-        style={{fontSize: 10, height: 30}}
+        style={{fontSize: 10, height: 30, width: 200}}
         value={this.state.url}
         onChangeText={text => this.setState({url: text})}
         placeholder="https://www.youtube.com/..."
@@ -109,13 +128,8 @@ export default class SubmitPopup extends Component {
           this.getUrlField()
           : null
         }
-        <Text style={styles.titles}>Add some tags:</Text>
-        {this.renderModal(0)}
-        {toSendTags[0] !== null ?
-          this.renderModal(1)
-          : null
-        }
-        <Button style={{marginTop: 10}} text="Submit" onPress={() => this.props.submitSong(toSendTags, this.state.url)} />
+        {this.renderAllModal()}
+        <Button text="Submit" onPress={() => this.props.submitSong(toSendTags.filter(t => t), this.state.url)} />
       </View>
     )
   }

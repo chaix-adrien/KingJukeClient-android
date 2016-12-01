@@ -11,45 +11,6 @@ import PubSub from 'pubsub-js'
 import Keychain from 'react-native-keychain'
 import base64 from 'base-64'
 
-const TMPtag = [
-  {
-    name: "electro",
-    color: "#304FFE",
-    textColor: "white",
-  },
-  {
-    name: "raggae",
-    color: "#C6FF00",
-    textColor: "black",
-  },
-  {
-    name: "rap",
-    color: "#DD2C00",
-    textColor: "white",
-  },
-  {
-    name: "hip-hop",
-    color: "#C51162",
-    textColor: "white",
-  },
-  {
-    name: "classique",
-    color: "#BDBDBD",
-    textColor: "black",
-  },
-  {
-    name: "dub",
-    color: "#CF1162",
-    textColor: "white",
-  },
-  {
-    name: "rock",
-    color: "#00FD0D",
-    textColor: "black",
-  },
-]
-
-
 const endpoints = require('../endpoint.json')
 const colors = require('../colors.json')
 
@@ -144,7 +105,7 @@ export default class PlaylistSong extends Component {
   }
 
   render() {
-    const {adminMode, serverURL, song, id} = this.props
+    const {adminMode, serverURL, song, id, tags} = this.props
     return(
       <View
       style={{borderBottomWidth: 1, borderColor: "black"}}
@@ -162,9 +123,9 @@ export default class PlaylistSong extends Component {
           <View>
             {song.tags.map((tag, id) =>
               <Text key={id}
-              style={[styles.tag, {backgroundColor:TMPtag[tag].color, color: TMPtag[tag].textColor}]}
+              style={[styles.tag, {backgroundColor:tag.color, color: "white"}]}
               >
-                {TMPtag[tag].name}
+                {tag.name}
               </Text>
             )}
           </View>

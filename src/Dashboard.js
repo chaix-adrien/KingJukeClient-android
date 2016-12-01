@@ -80,6 +80,7 @@ export default class Dashboard extends Component {
       showAdminPopup: false,
       adminMode: false,
       isToolBarOpen: false,
+      authorizedTags: [],
       theme: "Anything",
     }
     this.popupRectAdmin = {x: width / 2, y: height / 1.5, width: 1, height: 1}
@@ -105,6 +106,7 @@ export default class Dashboard extends Component {
     .then(playlist => {
       playlist.playlist.forEach(s => (s.tags = [])) // waiting for integration
       this.setState({playlist: playlist.playlist, currentSong: playlist.first_song, theme: playlist.theme})
+      this.setState({playlist: playlist.playlist, currentSong: playlist.first_song, theme: playlist.theme, authorizedTags: playlist.authorized_tags})
     })
     .catch(e => console.log(e))
   }
@@ -116,9 +118,12 @@ export default class Dashboard extends Component {
       if (url.split(MOBILE_URL_ROOT)[1]) {
         url = PC_URL_ROOT + url.split(MOBILE_URL_ROOT)[1]
       }
+      if (tags.every(t => !t)) {
+        tags = []
+      }
       const header = {
        method: "POST",
-       body: url
+       body: JSON.stringify({url: url, tags: tags})
       }
       const {serverURL} = this.props
       fetch(serverURL + endpoints.playlist, header)
@@ -295,7 +300,7 @@ export default class Dashboard extends Component {
   fromRect={this.state.popupRectSubmit}
   placement="top"
   onClose={() => this.setState({showSubmitPopup: false})}>
-    <SubmitPopup tags={TMPtag} urlField={this.state.showSubmitPopup === "byLink"} submitSong={this.addTagToSubmit}/>
+    <SubmitPopup tags={this.state.authorizedTags} urlField={this.state.showSubmitPopup === "byLink"} submitSong={this.addTagToSubmit}/>
   </Popover>
 
   getAdminPopup = () => 

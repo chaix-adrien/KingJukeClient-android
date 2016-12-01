@@ -9,44 +9,6 @@ import {
 import CurrentSong from './CurrentSong'
 import PlaylistSong from './PlaylistSong'
 
-const TMPtag = [
-  {
-    name: "electro",
-    color: "#304FFE",
-    textColor: "white",
-  },
-  {
-    name: "raggae",
-    color: "#C6FF00",
-    textColor: "black",
-  },
-  {
-    name: "rap",
-    color: "#DD2C00",
-    textColor: "white",
-  },
-  {
-    name: "hip-hop",
-    color: "#C51162",
-    textColor: "white",
-  },
-  {
-    name: "classique",
-    color: "#BDBDBD",
-    textColor: "black",
-  },
-  {
-    name: "dub",
-    color: "#CF1162",
-    textColor: "white",
-  },
-  {
-    name: "rock",
-    color: "#00FD0D",
-    textColor: "black",
-  },
-]
-
 const colors = require('../colors.json')
 
 export default class Playlist extends Component {
@@ -58,7 +20,7 @@ export default class Playlist extends Component {
   }
 
   render() {
-    let {playlist, currentSong, onPressCurrentSong, adminMode, serverURL, reload} = this.props
+    let {playlist, currentSong, onPressCurrentSong, adminMode, serverURL, reload, tags} = this.props
     if (!currentSong)
       currentSong = {title: null}
     return (
