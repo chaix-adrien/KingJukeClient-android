@@ -104,6 +104,19 @@ export default class PlaylistSong extends Component {
       this.swipeout._openRight()
   }
 
+  getPhiligranVote  = () => {
+    const {song} = this.props
+    if (song.has_voted === 0) return null
+    return (
+      <Icon
+        size={30}
+        color={song.has_voted > 0 ? "#21BA4550" : "#DB282850"}
+        name={song.has_voted > 0 ? 'heart' : 'skull'}
+        style={{margin: 5}}
+      />
+    )
+  }
+
   render() {
     const {adminMode, serverURL, song, id, tags} = this.props
     return(
@@ -120,6 +133,7 @@ export default class PlaylistSong extends Component {
           <TouchableOpacity style={styles.songContainer} onPress={this.onPress}>
           <Text style={[styles.songScore, {borderColor: this.getScoreColor(song.score)}]}>{song.score}</Text>
           <Text style={styles.songText}>{song.title}</Text>
+          {this.getPhiligranVote()}
           <View>
             {song.tags.map((tag, id) =>
               <Text key={id}

@@ -82,6 +82,7 @@ export default class Dashboard extends Component {
       isToolBarOpen: false,
       authorizedTags: [],
       theme: "Anything",
+      tags : [],
     }
     this.popupRectAdmin = {x: width / 2, y: height / 1.5, width: 1, height: 1}
     this.urlNav = ['https://m.youtube.com/']
@@ -104,8 +105,6 @@ export default class Dashboard extends Component {
     const {serverURL} = this.props
     fetch(serverURL + endpoints.playlist).then(r => r.json())
     .then(playlist => {
-      playlist.playlist.forEach(s => (s.tags = [])) // waiting for integration
-      this.setState({playlist: playlist.playlist, currentSong: playlist.first_song, theme: playlist.theme})
       this.setState({playlist: playlist.playlist, currentSong: playlist.first_song, theme: playlist.theme, authorizedTags: playlist.authorized_tags})
     })
     .catch(e => console.log(e))
