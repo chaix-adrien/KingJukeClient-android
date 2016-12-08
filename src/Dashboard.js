@@ -14,6 +14,7 @@ import * as Animatable from 'react-native-animatable';
 import Popover from 'react-native-popover';
 import PubSub from 'pubsub-js'
 import Keychain from 'react-native-keychain'
+import base64 from 'base-64'
 
 import Playlist from './Playlist'
 import SubmitPopup from './SubmitPopup'
@@ -90,6 +91,21 @@ export default class Dashboard extends Component {
   }
 
   componentWillMount() {
+    Keychain.getGenericPassword().then((cred) => {
+      if (cred) {
+        const {username, password} = cred
+        const tmpCredentials = base64.encode(`${username}:${password}`)
+        const header = new Headers()
+        header.append("Authorization", "Basic " + tmpCredentials)
+        fetch(this.props.serverURL + endpoints.admin + "log", {method: 'GET', headers : header})
+        .then(e => {
+          if (e.status === 200)
+            this.setState({adminMode: true})
+          else
+            Keychain.resetGenericPassword()
+        })
+      }
+    }).catch(e => null)
     this.reloadPlaylist()
     this.autorefresh = setInterval(() => {
       this.reloadPlaylist()

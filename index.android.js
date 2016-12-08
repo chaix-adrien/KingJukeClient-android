@@ -20,10 +20,12 @@ import {Pulse} from 'react-native-loader';
 import * as Animatable from 'react-native-animatable';
 import Keychain from 'react-native-keychain'
 
+import Button from './src/Button'
 import IpSearcher from './src/IpSearcher';
 import Dashboard from './src/Dashboard';
 const colors = require('./colors.json')
 const {width, height} = Dimensions.get("window")
+
 
 export default class ytJukebox extends Component {
   constructor(props) {
@@ -61,7 +63,12 @@ export default class ytJukebox extends Component {
     return (
       <Animatable.View ref={e => (this.loader = e)} style={styles.loadingContainer}>
         <Pulse size={width / 3} color={colors.main} />
-        <Text style={styles.loadingText}>OPENING{"\n"}YOUR{"\n"}JUKEBOX</Text>
+        <Text style={styles.loadingText}>OPENING{"\n"}LAST{"\n"}JUKEBOX</Text>
+        <Button onPress={() => {
+          this.quitServer()
+          this.stopLoading()
+        }}
+        text="Cancel"/>
       </Animatable.View>
     )
   }
